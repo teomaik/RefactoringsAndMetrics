@@ -40,7 +40,7 @@ public class Analysis {
                 filePath = column[0];
 
             for(JavaFile jf: javaFiles) {
-                if(jf.getPath().endsWith(filePath)) {
+                if(filePath.endsWith(jf.getPath())) {
                     jf.setDSC(Double.parseDouble(column[1]));
                     jf.setWMC(Double.parseDouble(column[2]));
                     jf.setDIT(Integer.parseInt(column[3]));

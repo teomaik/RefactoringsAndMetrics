@@ -6,10 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="RefactoringsAndMetrics" />
         <module name="githubprlabels" />
         <module name="githubprlabels - Copy" />
         <module name="githubprlabels-onlyChanges" />
+        <module name="refactoringandmetrics" />
       </profile>
     </annotationProcessing>
   </component>

@@ -128,16 +128,16 @@ public class Main {
         //Get url and name
         ArrayList<String> csvs = new ArrayList<>();
         ArrayList<String> projects = new ArrayList<>();
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
-        projects.add("");
+        projects.add("https://github.com/apache/commons-io.git");
+        projects.add("https://github.com/apache/commons-lang.git");
+        projects.add("https://github.com/apache/commons-rdf.git");
+        projects.add("https://github.com/apache/giraph.git");
+        projects.add("https://github.com/apache/griffin.git");
+        projects.add("https://github.com/apache/johnzon.git");
+        projects.add("https://github.com/apache/maven-archetype.git");
+        projects.add("https://github.com/apache/openwebbeans.git");
+        projects.add("https://github.com/apache/unomi.git");
+        projects.add("https://github.com/apache/flume.git");
 
         for(String prj: projects){
             csvs.add(runAnalysis(prj));

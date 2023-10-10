@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.refactoringminer.api.GitHistoryRefactoringMiner;
 import org.refactoringminer.api.GitService;
@@ -15,7 +16,23 @@ import org.refactoringminer.util.GitServiceImpl;
 
 public class Main {
 
-
+    /**
+     * Get the default branch name after cloning project
+     *
+     * @param project
+     * @return the default branch name
+     */
+    public static String getDefaultBranchName(String pathDirPrj){
+        String branch = "";
+        try {
+            Git git = Git.open(new File(pathDirPrj));
+            branch = git.getRepository().getBranch();
+            git.close(); // Close the Git repository
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return branch;
+    }
     public static String runAnalysis(String gitURL){
         //Get url and name
         gitURL= gitURL.replace(".git","");
@@ -32,7 +49,27 @@ public class Main {
                     projectName,
                     gitURL);
 
-            miner.detectAll(repo, "master", new RefactoringHandler() {
+
+            /////////////////////////////////////////////////////////////////
+//            /**
+//             * Get the default branch name after cloning project
+//             *
+//             * @param project
+//             * @return the default branch name
+//             */
+//            public static String getDefaultBranchName(Project project){
+//                String branch = "";
+//                try {
+//                    Git git = Git.open(new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "repos" + System.getProperty("file.separator") + project.getName()));
+//                    branch = git.getRepository().getBranch();
+//                    git.close(); // Close the Git repository
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                return branch;
+//            }
+            /////////////////////////////////////////////////////////////////
+            miner.detectAll(repo, getDefaultBranchName(projectPath), new RefactoringHandler() {
                 @Override
                 public void handle(String commitId, List<Refactoring> refactorings) {
                     if(!refactorings.isEmpty()) {
@@ -51,7 +88,8 @@ public class Main {
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
+            System.out.println(e);
         }
 
         //Get extra information for each refactoring
@@ -122,7 +160,21 @@ public class Main {
             });
         }
         String join = String.join("\n ", csvLines);
-        return join;
+//        return join;
+//end of correct code
+
+        //temporary code for first analysis
+        try {
+            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_"+projectName+".csv"));
+//            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
+            writer.write(join);
+            writer.close();
+            return projectName+" true!";
+        } catch (Exception e) {
+//            throw new RuntimeException(e);
+
+            return projectName+" false! \n"+e;
+        }
     }
     public static void main(String[] args) {
         //Get url and name
@@ -142,20 +194,21 @@ public class Main {
         for(String prj: projects){
             csvs.add(runAnalysis(prj));
         }
+        String listString = String.join("\n ", csvs);
+        System.out.println(listString);
 
-
-
-        //create csv file
-        try {
-            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_"+projectName+".csv"));
-//            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
-
-            String listString = String.join("\n ", csvs);
-            writer.write(listString);
-            writer.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//
+//        //create csv file
+//        try {
+//            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_projects.csv"));
+////            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
+//
+//            String listString = String.join("\n ", csvs);
+//            writer.write(listString);
+//            writer.close();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
     }
 }

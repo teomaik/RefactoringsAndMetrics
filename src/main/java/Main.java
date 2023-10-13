@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -38,6 +40,7 @@ public class Main {
         gitURL= gitURL.replace(".git","");
         String projectName = gitURL.split("/")[gitURL.split("/").length-1];
         String projectPath = System.getProperty("user.dir") +File.separator+ projectName;
+        String errorMesg = "";
 
 
         //Get refactorings
@@ -89,6 +92,7 @@ public class Main {
             });
         } catch (Exception e) {
 //            throw new RuntimeException(e);
+            errorMesg += e+"\n";
             System.out.println(e);
         }
 
@@ -169,34 +173,67 @@ public class Main {
 //            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
             writer.write(join);
             writer.close();
+            writeTxtFile(projectName+"_error_msg", "done \n"+errorMesg);
             return projectName+" true!";
         } catch (Exception e) {
 //            throw new RuntimeException(e);
-
+            errorMesg += e+"\n";
+            writeTxtFile(projectName+"_error_msg", "failed \n"+errorMesg);
             return projectName+" false! \n"+e;
+        }
+    }
+
+    public static void writeCSVFile(String fileName, String txt){
+        try {
+            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/"+fileName+".csv"));
+            writer.write(txt);
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void writeTxtFile(String filename, String txt){
+        try {
+            PrintWriter writer = new PrintWriter(filename+".txt", "UTF-8");
+            writer.println(txt);
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
     public static void main(String[] args) {
         //Get url and name
         ArrayList<String> csvs = new ArrayList<>();
         ArrayList<String> projects = new ArrayList<>();
-        projects.add("https://github.com/apache/commons-io.git");
-        projects.add("https://github.com/apache/commons-lang.git");
-        projects.add("https://github.com/apache/commons-rdf.git");
-        projects.add("https://github.com/apache/giraph.git");
-        projects.add("https://github.com/apache/griffin.git");
-        projects.add("https://github.com/apache/johnzon.git");
-        projects.add("https://github.com/apache/maven-archetype.git");
-        projects.add("https://github.com/apache/openwebbeans.git");
-        projects.add("https://github.com/apache/unomi.git");
-        projects.add("https://github.com/apache/flume.git");
+//        projects.add("https://github.com/apache/commons-io.git");
+//        projects.add("https://github.com/apache/commons-lang.git");
+//        projects.add("https://github.com/apache/commons-rdf.git");
+//        projects.add("https://github.com/apache/giraph.git");
+//        projects.add("https://github.com/apache/griffin.git");
+//        projects.add("https://github.com/apache/johnzon.git");
+//        projects.add("https://github.com/apache/maven-archetype.git");
+//        projects.add("https://github.com/apache/openwebbeans.git");
+//        projects.add("https://github.com/apache/unomi.git");
+//        projects.add("https://github.com/apache/flume.git");
 
-        for(String prj: projects){
+        System.out.println("Number of Command Line Argument = "+args.length);
+        for(int i = 0; i< args.length; i++) {
+            System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
+            projects.add(args[i]);
+        }
+
+try{
+        for(String prj: projects) {
             csvs.add(runAnalysis(prj));
         }
+}catch(Exception e){
+    csvs.add("error during exec: \n"+e);
+}
         String listString = String.join("\n ", csvs);
         System.out.println(listString);
 
+        writeTxtFile("final_results", listString);
 //
 //        //create csv file
 //        try {

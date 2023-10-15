@@ -13,6 +13,9 @@ public class CommitBeforeRef {
         this.involvedFilesBeforeRefactoring = involvedFilesBeforeRefactoring;
     }
 
+    public void destroyMe() {
+    	this.analysis = null;
+    }
 
     public String getRefactoringCommit() {
         return refactoringCommit;

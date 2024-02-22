@@ -21,14 +21,14 @@ public class Main {
 		// Get url and name
 		ArrayList<String> csvs = new ArrayList<>();
 		ArrayList<String> projects = new ArrayList<>();
-//projects.add("https://github.com/teomaik/DeRec-GEA.git");
+projects.add("https://github.com/teomaik/DeRec-GEA.git");
 		
 		
-		System.out.println("Number of Command Line Argument = " + args.length);
-		for (int i = 0; i < args.length; i++) {
-			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
-			projects.add(args[i]);
-		}
+//		System.out.println("Number of Command Line Argument = " + args.length);
+//		for (int i = 0; i < args.length; i++) {
+//			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
+//			projects.add(args[i]);
+//		}
 
 		try {
 			for (String prj : projects) {
@@ -57,12 +57,7 @@ public class Main {
 	}
 
 
-	/**
-	 * Get the default branch name after cloning project
-	 *
-	 * @param project
-	 * @return the default branch name
-	 */
+
 	public static String getDefaultBranchName(String pathDirPrj) {
 		String branch = "";
 		try {
@@ -168,7 +163,7 @@ public class Main {
 					line += "," + tempFile.getNOCC();//
 					line += "," + tempFile.getCBO();//
 					line += "," + tempFile.getSIZE1();//
-					line += "," + "1"	//Refactored
+					line += "," + "1";	//Refactored
 					classes.put(filePath, line);
 
 	                System.out.println(line);
@@ -231,10 +226,11 @@ public class Main {
 		"EXTRACT_CLASS", "EXTRACT_SUBCLASS", "EXTRACT_VARIABLE", "REPLACE_VARIABLE_WITH_ATTRIBUTE", "REPLACE_ATTRIBUTE",
 		"MERGE_ATTRIBUTE", "SPLIT_ATTRIBUTE", "MOVE_AND_RENAME_METHOD", "MERGE_CLASS", "SPLIT_CLASS"));
 
-		Git git = Git.open(new File(projectPath));
-		List<CommitObj> commitIds = utils.getCommitIds(git);
-
+		List<CommitObj> commitIds = new ArrayList<CommitObj>();
 		try {
+			Git git = Git.open(new File(projectPath));
+			commitIds = Utils.getCommitIds(git);
+
 			Repository repo = gitService.cloneIfNotExists(projectName, gitURL);
 
 			miner.detectAll(repo, getDefaultBranchName(projectPath), new RefactoringHandler() {

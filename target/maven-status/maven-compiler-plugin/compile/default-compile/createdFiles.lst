@@ -3,11 +3,11 @@ Utils.class
 CommitBeforeRef.class
 metricsCalculator\infrastructure\metrics\QualityMetrics.class
 metricsCalculator\visitors\ClassVisitor.class
+CommitObj.class
 metricsCalculator\infrastructure\entities\Class.class
 Main$1.class
 Analysis.class
 Main.class
-Main$2.class
 metricsCalculator\infrastructure\entities\Project.class
 metricsCalculator\calculator\MetricsCalculator.class
 metricsCalculator\infrastructure\entities\JavaFile.class

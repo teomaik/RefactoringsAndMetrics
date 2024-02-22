@@ -176,4 +176,29 @@ public class Utils {
         return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
+
+    /**
+     * Gets all commit ids for a specific git repo.
+     *
+     * @param git the git object
+     */
+    public List<CommitObj> getCommitIds(Git git) {
+        List<String> commitIds = new ArrayList<>();
+        try {
+            String treeName = getHeadName(git.getRepository());
+            for (RevCommit commit : git.log().add(git.getRepository().resolve(treeName)).call())
+                commitIds.add(commit.getName());
+        } catch (Exception ignored) {
+        }
+        Collections.reverse(commitIds);
+
+        List<CommitObj> commitObjList = new ArrayList<>();
+        for (String s: commitIds){
+            commitObjList.add(new CommitObj(s, getDateOfCommit(git,s)));
+        }
+
+        commitObjList.sort(Comparator.comparing(CommitObj::getDate));
+
+        return commitObjList;
+    }
 }

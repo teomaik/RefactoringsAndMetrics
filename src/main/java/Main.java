@@ -17,6 +17,46 @@ import org.refactoringminer.util.GitServiceImpl;
 
 public class Main {
 
+	public static void main(String[] args) {
+		// Get url and name
+		ArrayList<String> csvs = new ArrayList<>();
+		ArrayList<String> projects = new ArrayList<>();
+//projects.add("https://github.com/teomaik/DeRec-GEA.git");
+		
+		
+		System.out.println("Number of Command Line Argument = " + args.length);
+		for (int i = 0; i < args.length; i++) {
+			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
+			projects.add(args[i]);
+		}
+
+		try {
+			for (String prj : projects) {
+				csvs.add(runAnalysis(prj));
+			}
+		} catch (Exception e) {
+			csvs.add("error during exec: \n" + e);
+		}
+		String listString = String.join("\n ", csvs);
+		System.out.println(listString);
+
+		writeTxtFile("final_results", listString);
+//
+//        //create csv file
+//        try {
+//            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_projects.csv"));
+////            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
+//
+//            String listString = String.join("\n ", csvs);
+//            writer.write(listString);
+//            writer.close();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+
+	}
+
+
 	/**
 	 * Get the default branch name after cloning project
 	 *
@@ -35,7 +75,7 @@ public class Main {
 		return branch;
 	}
 
-	public static void partedAnalysis(String projectName, String projectPath, List<CommitBeforeRef> commitArray, int currentCommit, int commitStep){
+	public static void partedAnalysis(String projectName, String projectPath, List<CommitBeforeRef> commitArray, int currentCommit, int commitStep, List<CommitObj> commitIds){
 
 
 		String errorMesg = "";
@@ -44,7 +84,6 @@ public class Main {
 		if(lastCommit>commitArray.size()) {
 			lastCommit=commitArray.size();
 		}
-		
 		try {
 			for(int comm = currentCommit; comm<(lastCommit); comm++){
 	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
@@ -83,7 +122,7 @@ public class Main {
 
 	        //gather data for Csv file
 	        ArrayList<String> csvLines = new ArrayList();
-	        csvLines.add("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED");
+			csvLines.add("projectName,SHA,CommitNumber,file,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,REFACTORED");
 	        String cwdPath = System.getProperty("user.dir");
 
 	        for(int comm = currentCommit; comm<(lastCommit); comm++){
@@ -93,41 +132,46 @@ public class Main {
 	            Analysis tempAnalysis = commitBeforeRef.getAnalysis();
 	            ArrayList<JavaFile> javaFiles = tempAnalysis.getJavaFiles();
 	            Hashtable<String, String> classes = new Hashtable<String, String>();
-	            for( JavaFile tempFile: javaFiles){
-	                String line = projectName + ", "+commitBeforeRef.getCommitBeforeRefactoring();
-	//File.separator
-//	                String filePath = tempFile.getPath().replaceFirst((projectPath + File.separator), "");
+				
+				ArrayList<String> refactoredClasses = new ArrayList<>();
+				Set<String> set = new HashSet<>(commitBeforeRef.getInvolvedFilesBeforeRefactoring());
+				refactoredClasses.addAll(set);
+
+				String commitNumber = "";
+				for(int i=0; i<commitIds.size(); i++) {
+					if(!commitIds.get(i).getSha().equals(commitBeforeRef.getCommitBeforeRefactoring())){
+						continue;
+					}
+
+					commitNumber = "" + (i+1);
+					break;
+				}
+
+				for( JavaFile tempFile: javaFiles){
+	                String line = projectName + ","+commitBeforeRef.getCommitBeforeRefactoring()+","+commitNumber;
+
 	                String filePath = tempFile.getPath().replace(File.separator, "/");
 	                filePath = filePath.replaceFirst("/", "");
-
-	                line += ","+ filePath;
-	                line += ","+ tempFile.getRank();
-	                line += ","+ tempFile.getDSC();
-	                line += ","+ tempFile.getWMC();
-	                line += ","+ tempFile.getDIT();
-	                line += ","+ tempFile.getCC();
-	                line += ","+ tempFile.getLCOM();
-	                line += ","+ tempFile.getMPC();
-	                line += ","+ tempFile.getNOM();
-	                line += ","+ tempFile.getRFC();
-	                line += ","+ tempFile.getDAC();
-	                line += ","+ tempFile.getNOCC();
-	                line += ","+ tempFile.getCBO();
-	                line += ","+ tempFile.getSIZE1();
-	                line += ","+ tempFile.getSIZE2();
-	                classes.put(filePath, line);
+				
+					if (!refactoredClasses.contains(filePath)) {
+						continue;
+					}
+	
+					line += "," + filePath;
+					line += "," + tempFile.getDIT(); //
+					line += "," + tempFile.getCC();//
+					line += "," + tempFile.getLCOM();//
+					line += "," + tempFile.getMPC();//
+					line += "," + tempFile.getNOM();//
+					line += "," + tempFile.getRFC();//
+					line += "," + tempFile.getDAC();//
+					line += "," + tempFile.getNOCC();//
+					line += "," + tempFile.getCBO();//
+					line += "," + tempFile.getSIZE1();//
+					line += "," + "1"	//Refactored
+					classes.put(filePath, line);
 
 	                System.out.println(line);
-	            }
-//	            String listString = String.join(", ", refactoredClasses);
-//	            System.out.println(listString);
-//	            List<String> refactoredClasses = commitBeforeRef.getInvolvedFilesBeforeRefactoring();
-
-	            ArrayList<String> refactoredClasses = new ArrayList<>();
-	            Set<String> set = new HashSet<>(commitBeforeRef.getInvolvedFilesBeforeRefactoring());
-	            refactoredClasses.addAll(set);
-	            for(String refClass: refactoredClasses){
-	                classes.put(refClass, classes.get(refClass)+",true");
 	            }
 
 	            classes.forEach((k, ln) -> {
@@ -135,7 +179,6 @@ public class Main {
 	            });
 	            
 	        }
-	        
 
 	        String join = String.join("\n ", csvLines);
 	        
@@ -149,7 +192,7 @@ public class Main {
 	            writeTxtFile(projectName+"_error_msg", "done \n"+errorMesg);
 	            result= projectName+" true!";
 	        } catch (Exception e) {
-//	            throw new RuntimeException(e);
+
 	            errorMesg += e+"\n";
 	            writeTxtFile(projectName+"_error_msg", "failed \n"+errorMesg);
 	            result= projectName+" false! \n"+e;
@@ -182,28 +225,18 @@ public class Main {
 		List<CommitBeforeRef> commitBeforeRefs = new ArrayList<>();
 		GitService gitService = new GitServiceImpl();
 		GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
+		
+		ArrayList<String> refactoringTypesToKeep = new ArrayList<>(Arrays.asList("EXTRACT_METHOD","MOVE_METHOD", "MOVE_ATTRIBUTE", "PULL_UP_METHOD",
+		"PULL_UP_ATTRIBUTE", "PUSH_DOWN_METHOD", "PUSH_DOWN_ATTRIBUTE", "EXTRACT_SUPERCLASS", "EXTRACT_INTERFACE", "EXTRACT_AND_MOVE_METHOD",
+		"EXTRACT_CLASS", "EXTRACT_SUBCLASS", "EXTRACT_VARIABLE", "REPLACE_VARIABLE_WITH_ATTRIBUTE", "REPLACE_ATTRIBUTE",
+		"MERGE_ATTRIBUTE", "SPLIT_ATTRIBUTE", "MOVE_AND_RENAME_METHOD", "MERGE_CLASS", "SPLIT_CLASS"));
+
+		Git git = Git.open(new File(projectPath));
+		List<CommitObj> commitIds = utils.getCommitIds(git);
+
 		try {
 			Repository repo = gitService.cloneIfNotExists(projectName, gitURL);
 
-			/////////////////////////////////////////////////////////////////
-//            /**
-//             * Get the default branch name after cloning project
-//             *
-//             * @param project
-//             * @return the default branch name
-//             */
-//            public static String getDefaultBranchName(Project project){
-//                String branch = "";
-//                try {
-//                    Git git = Git.open(new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "repos" + System.getProperty("file.separator") + project.getName()));
-//                    branch = git.getRepository().getBranch();
-//                    git.close(); // Close the Git repository
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                return branch;
-//            }
-			/////////////////////////////////////////////////////////////////
 			miner.detectAll(repo, getDefaultBranchName(projectPath), new RefactoringHandler() {
 				@Override
 				public void handle(String commitId, List<Refactoring> refactorings) {
@@ -212,6 +245,10 @@ public class Main {
 						List<String> refactoringTypes = new ArrayList<>();
 						List<String> involvedFilesBeforeRefactoring = new ArrayList<>();
 						for (Refactoring ref : refactorings) {
+							if (!refactoringTypesToKeep.contains(ref.getRefactoringType().toString())) {
+								continue;
+							}
+
 							refactoringTypes.add(ref.getRefactoringType().toString());
 							for (ImmutablePair<String, String> immutablePair : ref
 									.getInvolvedClassesBeforeRefactoring()) {
@@ -225,19 +262,16 @@ public class Main {
 				}
 			});
 		} catch (Exception e) {
-//            throw new RuntimeException(e);
 			errorMesg += e + "\n";
 			System.out.println(e);
 		}
 
-		// Get extra information for each refactoring
-//		int currentCommit = 0;
 		int commitStep = 5;
 		
 		String finalErrors = "***FINAL ERRORS";
 		for(int commit=0; commit<commitBeforeRefs.size(); commit+=commitStep) {
 			try {				
-				partedAnalysis(projectName, projectPath, commitBeforeRefs, commit, commitStep);
+				partedAnalysis(projectName, projectPath, commitBeforeRefs, commit, commitStep, commitIds);
 			}catch(Exception e) {
 				finalErrors+="\n"+e.getMessage();	
 			}
@@ -246,158 +280,6 @@ public class Main {
 		return finalErrors;
 	}
 	
-	
-	public static String runCompleteAnalysis(String gitURL) {
-		// Get url and name
-		gitURL = gitURL.replace(".git", "");
-		String projectName = gitURL.split("/")[gitURL.split("/").length - 1];
-		String projectPath = System.getProperty("user.dir") + File.separator + projectName;
-		String errorMesg = "";
-
-		// Get refactorings
-		List<CommitBeforeRef> commitBeforeRefs = new ArrayList<>();
-		GitService gitService = new GitServiceImpl();
-		GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-		try {
-			Repository repo = gitService.cloneIfNotExists(projectName, gitURL);
-
-			/////////////////////////////////////////////////////////////////
-//            /**
-//             * Get the default branch name after cloning project
-//             *
-//             * @param project
-//             * @return the default branch name
-//             */
-//            public static String getDefaultBranchName(Project project){
-//                String branch = "";
-//                try {
-//                    Git git = Git.open(new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "repos" + System.getProperty("file.separator") + project.getName()));
-//                    branch = git.getRepository().getBranch();
-//                    git.close(); // Close the Git repository
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                return branch;
-//            }
-			/////////////////////////////////////////////////////////////////
-			miner.detectAll(repo, getDefaultBranchName(projectPath), new RefactoringHandler() {
-				@Override
-				public void handle(String commitId, List<Refactoring> refactorings) {
-					if (!refactorings.isEmpty()) {
-						// Create CommitBeforeRef
-						List<String> refactoringTypes = new ArrayList<>();
-						List<String> involvedFilesBeforeRefactoring = new ArrayList<>();
-						for (Refactoring ref : refactorings) {
-							refactoringTypes.add(ref.getRefactoringType().toString());
-							for (ImmutablePair<String, String> immutablePair : ref
-									.getInvolvedClassesBeforeRefactoring()) {
-								involvedFilesBeforeRefactoring.add(immutablePair.left);
-							}
-						}
-						CommitBeforeRef commitBeforeRef = new CommitBeforeRef(commitId, refactoringTypes,
-								involvedFilesBeforeRefactoring);
-						commitBeforeRefs.add(commitBeforeRef);
-					}
-				}
-			});
-		} catch (Exception e) {
-//            throw new RuntimeException(e);
-			errorMesg += e + "\n";
-			System.out.println(e);
-		}
-
-		// Get extra information for each refactoring
-		int currentCommit = 0;
-		int numberOfCommitStep = 5;
-		
-		
-		System.out.println("Total refactorings: " + commitBeforeRefs.size());
-		for (CommitBeforeRef commitBeforeRef : commitBeforeRefs) {
-			System.out.println("Analyzing " + commitBeforeRef.refactoringCommit);
-			// Save previous SHA
-			String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(), projectName);
-			commitBeforeRef.setCommitBeforeRefactoring(previousSha);
-
-			// Checkout previous SHA
-			Utils.checkoutGitProject(projectName, previousSha);
-
-			// Analyze commit and save
-			Analysis analysis = new Analysis(projectPath);
-			analysis.StartAnalysis();
-			commitBeforeRef.setAnalysis(analysis);
-		}
-
-		// gather data for Csv file
-		ArrayList<String> csvLines = new ArrayList();
-		csvLines.add("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED");
-		String cwdPath = System.getProperty("user.dir");
-
-		for (CommitBeforeRef commitBeforeRef : commitBeforeRefs) {
-			Analysis tempAnalysis = commitBeforeRef.getAnalysis();
-			ArrayList<JavaFile> javaFiles = tempAnalysis.getJavaFiles();
-			Hashtable<String, String> classes = new Hashtable<String, String>();
-			for (JavaFile tempFile : javaFiles) {
-				String line = projectName + ", " + commitBeforeRef.getCommitBeforeRefactoring();
-//File.separator
-//                String filePath = tempFile.getPath().replaceFirst((projectPath + File.separator), "");
-				String filePath = tempFile.getPath().replace(File.separator, "/");
-				filePath = filePath.replaceFirst("/", "");
-
-				line += "," + filePath;
-				line += "," + tempFile.getRank();
-				line += "," + tempFile.getDSC();
-				line += "," + tempFile.getWMC();
-				line += "," + tempFile.getDIT();
-				line += "," + tempFile.getCC();
-				line += "," + tempFile.getLCOM();
-				line += "," + tempFile.getMPC();
-				line += "," + tempFile.getNOM();
-				line += "," + tempFile.getRFC();
-				line += "," + tempFile.getDAC();
-				line += "," + tempFile.getNOCC();
-				line += "," + tempFile.getCBO();
-				line += "," + tempFile.getSIZE1();
-				line += "," + tempFile.getSIZE2();
-				classes.put(filePath, line);
-
-				System.out.println(line);
-			}
-//            String listString = String.join(", ", refactoredClasses);
-//            System.out.println(listString);
-//            List<String> refactoredClasses = commitBeforeRef.getInvolvedFilesBeforeRefactoring();
-
-			ArrayList<String> refactoredClasses = new ArrayList<>();
-			Set<String> set = new HashSet<>(commitBeforeRef.getInvolvedFilesBeforeRefactoring());
-			refactoredClasses.addAll(set);
-			for (String refClass : refactoredClasses) {
-				classes.put(refClass, classes.get(refClass) + ",true");
-			}
-
-			classes.forEach((k, ln) -> {
-				csvLines.add(ln);
-			});
-		}
-		String join = String.join("\n ", csvLines);
-//        return join;
-//end of correct code
-
-		// temporary code for first analysis
-		try {
-			FileWriter writer = new FileWriter(
-					new File(System.getProperty("user.dir") + "/data_" + projectName + ".csv"));
-//            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
-			writer.write(join);
-			writer.close();
-			writeTxtFile(projectName + "_error_msg", "done \n" + errorMesg);
-			return projectName + " true!";
-		} catch (Exception e) {
-//            throw new RuntimeException(e);
-			errorMesg += e + "\n";
-			writeTxtFile(projectName + "_error_msg", "failed \n" + errorMesg);
-			return projectName + " false! \n" + e;
-		}
-	}
-
 	public static void writeCSVFile(String fileName, String txt) {
 		try {
 			FileWriter writer = new FileWriter(new File(System.getProperty("user.dir") + "/" + fileName + ".csv"));
@@ -418,54 +300,4 @@ public class Main {
 		}
 	}
 
-	public static void main(String[] args) {
-		// Get url and name
-		ArrayList<String> csvs = new ArrayList<>();
-		ArrayList<String> projects = new ArrayList<>();
-//        projects.add("https://github.com/apache/commons-io.git");
-//        projects.add("https://github.com/apache/commons-lang.git");
-//        projects.add("https://github.com/apache/commons-rdf.git");
-//        projects.add("https://github.com/apache/giraph.git");
-//        projects.add("https://github.com/apache/griffin.git");
-//        projects.add("https://github.com/apache/johnzon.git");
-//        projects.add("https://github.com/apache/maven-archetype.git");
-//        projects.add("https://github.com/apache/openwebbeans.git");
-//        projects.add("https://github.com/apache/unomi.git");
-//        projects.add("https://github.com/apache/flume.git");
-		
-		
-//projects.add("https://github.com/teomaik/DeRec-GEA.git");
-		
-		
-		System.out.println("Number of Command Line Argument = " + args.length);
-		for (int i = 0; i < args.length; i++) {
-			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
-			projects.add(args[i]);
-		}
-
-		try {
-			for (String prj : projects) {
-				csvs.add(runAnalysis(prj));
-			}
-		} catch (Exception e) {
-			csvs.add("error during exec: \n" + e);
-		}
-		String listString = String.join("\n ", csvs);
-		System.out.println(listString);
-
-		writeTxtFile("final_results", listString);
-//
-//        //create csv file
-//        try {
-//            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_projects.csv"));
-////            writer.write("projectName,SHA,file,rank,DSC,WMC,DIT,CC,LCOM,MPC,NOM,RFC,DAC,NOCC,CBO,SIZE1,SIZE2,REFACTORED" + System.lineSeparator());
-//
-//            String listString = String.join("\n ", csvs);
-//            writer.write(listString);
-//            writer.close();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-
-	}
 }

@@ -21,14 +21,14 @@ public class Main {
 		// Get url and name
 		ArrayList<String> csvs = new ArrayList<>();
 		ArrayList<String> projects = new ArrayList<>();
-projects.add("https://github.com/teomaik/DeRec-GEA.git");
+//projects.add("https://github.com/teomaik/DeRec-GEA.git");
 		
 		
-//		System.out.println("Number of Command Line Argument = " + args.length);
-//		for (int i = 0; i < args.length; i++) {
-//			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
-//			projects.add(args[i]);
-//		}
+		System.out.println("Number of Command Line Argument = " + args.length);
+		for (int i = 0; i < args.length; i++) {
+			System.out.println(String.format("Command Line Argument %d is %s", i, args[i]));
+			projects.add(args[i]);
+		}
 
 		try {
 			for (String prj : projects) {
@@ -216,11 +216,14 @@ projects.add("https://github.com/teomaik/DeRec-GEA.git");
 		String projectPath = System.getProperty("user.dir") + File.separator + projectName;
 		String errorMesg = "";
 
+		System.out.println("runAnalysis()");
+
 		// Get refactorings
 		List<CommitBeforeRef> commitBeforeRefs = new ArrayList<>();
 		GitService gitService = new GitServiceImpl();
 		GitHistoryRefactoringMiner miner = new GitHistoryRefactoringMinerImpl();
-		
+
+		System.out.println("after git,miner()");
 		ArrayList<String> refactoringTypesToKeep = new ArrayList<>(Arrays.asList("EXTRACT_METHOD","MOVE_METHOD", "MOVE_ATTRIBUTE", "PULL_UP_METHOD",
 		"PULL_UP_ATTRIBUTE", "PUSH_DOWN_METHOD", "PUSH_DOWN_ATTRIBUTE", "EXTRACT_SUPERCLASS", "EXTRACT_INTERFACE", "EXTRACT_AND_MOVE_METHOD",
 		"EXTRACT_CLASS", "EXTRACT_SUBCLASS", "EXTRACT_VARIABLE", "REPLACE_VARIABLE_WITH_ATTRIBUTE", "REPLACE_ATTRIBUTE",
@@ -228,10 +231,11 @@ projects.add("https://github.com/teomaik/DeRec-GEA.git");
 
 		List<CommitObj> commitIds = new ArrayList<CommitObj>();
 		try {
-			Git git = Git.open(new File(projectPath));
-			commitIds = Utils.getCommitIds(git);
-
 			Repository repo = gitService.cloneIfNotExists(projectName, gitURL);
+
+			Git git = Git.open(new File(projectPath));
+			System.out.println("afterGit.open()");
+			commitIds = Utils.getCommitIds(git);
 
 			miner.detectAll(repo, getDefaultBranchName(projectPath), new RefactoringHandler() {
 				@Override
@@ -266,8 +270,10 @@ projects.add("https://github.com/teomaik/DeRec-GEA.git");
 		
 		String finalErrors = "***FINAL ERRORS";
 		for(int commit=0; commit<commitBeforeRefs.size(); commit+=commitStep) {
-			try {				
+			try {
+				System.out.println("\n\nRunning parted analysis for: "+projectName);
 				partedAnalysis(projectName, projectPath, commitBeforeRefs, commit, commitStep, commitIds);
+				System.out.println("Finished parted analysis for: "+projectName);
 			}catch(Exception e) {
 				finalErrors+="\n"+e.getMessage();	
 			}

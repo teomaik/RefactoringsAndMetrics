@@ -1,2 +1,4 @@
 /target
 /bin
+data_*
+final_results.txt

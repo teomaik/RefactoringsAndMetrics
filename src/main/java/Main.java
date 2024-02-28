@@ -255,9 +255,11 @@ public class Main {
 								involvedFilesBeforeRefactoring.add(immutablePair.left);
 							}
 						}
-						CommitBeforeRef commitBeforeRef = new CommitBeforeRef(commitId, refactoringTypes,
-								involvedFilesBeforeRefactoring);
-						commitBeforeRefs.add(commitBeforeRef);
+						if(involvedFilesBeforeRefactoring.size()>0){
+							CommitBeforeRef commitBeforeRef = new CommitBeforeRef(commitId, refactoringTypes,
+									involvedFilesBeforeRefactoring);
+							commitBeforeRefs.add(commitBeforeRef);
+						}
 					}
 				}
 			});

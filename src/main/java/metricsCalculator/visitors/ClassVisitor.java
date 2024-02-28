@@ -432,6 +432,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
 
         superClasses
                 .stream()
+                .filter(superClass -> superClass!=null)
                 .filter(superClass -> this.withinAnalysisBounds(superClass.getQualifiedName()))
                 .forEach(ancestors::add);
 

@@ -117,7 +117,6 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         currentClassObject.getQualityMetrics().setComplexity(calculateCC());
         currentClassObject.getQualityMetrics().setLCOM((double) calculateLCOM());
         currentClassObject.getQualityMetrics().setSIZE1(calculateSize1());
-        currentClassObject.getQualityMetrics().setSIZE2(calculateSize2());
         currentClassObject.getQualityMetrics().setMPC(calculateMPC());
         currentClassObject.getQualityMetrics().setWMC(calculateWMC());
         currentClassObject.getQualityMetrics().setRFC(calculateRFC(currentClassObject.getQualityMetrics().getWMC()));
@@ -125,17 +124,6 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         currentClassObject.getQualityMetrics().setCBO((double) efferentCoupledClasses.size());
         currentClassObject.getQualityMetrics().setDIT(calculateDIT());
         currentClassObject.getQualityMetrics().setNOM(currentClassObject.getQualityMetrics().getWMC());
-        currentClassObject.getQualityMetrics().setCAMC(calculateCAMC());
-        currentClassObject.getQualityMetrics().setANA(calculateANA());
-        currentClassObject.getQualityMetrics().setDCC((double) efferentCoupledClasses.size());
-        currentClassObject.getQualityMetrics().setDSC(calculateDSC());
-        currentClassObject.getQualityMetrics().setMFA(calculateMFA());
-        currentClassObject.getQualityMetrics().setDAM(calculateDAM());
-        currentClassObject.getQualityMetrics().setCIS(calculateCIS());
-        currentClassObject.getQualityMetrics().setMOA(calculateMOA());
-        currentClassObject.getQualityMetrics().setNPM(currentClassObject.getQualityMetrics().getCIS());
-        currentClassObject.getQualityMetrics().setNOP(calculateNOP());
-        currentClassObject.getQualityMetrics().setNOH(calculateNOH(currentClassObject.getQualityMetrics()));
     }
 
     /**

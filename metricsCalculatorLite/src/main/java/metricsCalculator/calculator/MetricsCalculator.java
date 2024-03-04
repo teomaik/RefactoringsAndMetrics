@@ -208,7 +208,7 @@ public class MetricsCalculator {
 
     public String printResults() {
         StringBuilder output = new StringBuilder();
-        output.append("FilePath\tClassesNum\tWMC\tDIT\tComplexity\tLCOM\tMPC\tNOM\tRFC\tDAC\tNOCC\tCBO\tSize1\tSize2\tClassNames");
+        output.append("FilePath\tClassesNum\tWMC\tDIT\tComplexity\tLCOM\tMPC\tNOM\tRFC\tDAC\tNOCC\tCBO\tSize1\tSize2\tClassNames\n");
         try {
             project.getJavaFiles().forEach(javaFile -> output.append(javaFile.getPath()).append("\t").append(javaFile.getQualityMetrics()).append("\t").append(javaFile.getClassNames()).append("\n"));
         } catch (Throwable t) {

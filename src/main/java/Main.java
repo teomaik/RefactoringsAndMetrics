@@ -21,7 +21,8 @@ public class Main {
 		// Get url and name
 		ArrayList<String> csvs = new ArrayList<>();
 		ArrayList<String> projects = new ArrayList<>();
-//projects.add("https://github.com/teomaik/DeRec-GEA.git");
+		projects.add("https://github.com/teomaik/DeRec-GEA.git");
+//		projects.add("https://github.com/apache/maven-archetype.git");
 		
 		
 		System.out.println("Number of Command Line Argument = " + args.length);
@@ -229,6 +230,7 @@ public class Main {
 		"EXTRACT_CLASS", "EXTRACT_SUBCLASS", "EXTRACT_VARIABLE", "REPLACE_VARIABLE_WITH_ATTRIBUTE", "REPLACE_ATTRIBUTE",
 		"MERGE_ATTRIBUTE", "SPLIT_ATTRIBUTE", "MOVE_AND_RENAME_METHOD", "MERGE_CLASS", "SPLIT_CLASS"));
 
+
 		List<CommitObj> commitIds = new ArrayList<CommitObj>();
 		try {
 			Repository repo = gitService.cloneIfNotExists(projectName, gitURL);
@@ -268,22 +270,147 @@ public class Main {
 			System.out.println(e);
 		}
 
+
 		int commitStep = 5;
-		
+
+
+		//***TEST
 		String finalErrors = "***FINAL ERRORS";
 		for(int commit=0; commit<commitBeforeRefs.size(); commit+=commitStep) {
 			try {
 				System.out.println("\n\nRunning parted analysis for: "+projectName);
-				partedAnalysis(projectName, projectPath, commitBeforeRefs, commit, commitStep, commitIds);
+				partedAnalysisTest(projectName, projectPath, commitBeforeRefs, commit, commitStep, commitIds);
 				System.out.println("Finished parted analysis for: "+projectName);
 			}catch(Exception e) {
 				finalErrors+="\n"+e.getMessage();	
 			}
 		}
+
+		/*
+		 * Running the Metrics Calculator tool to calculate Software Quality Metrics.
+		 */
+		// String finalErrors = "***FINAL ERRORS";
+		// for(int commit=0; commit<commitBeforeRefs.size(); commit+=commitStep) {
+		// 	try {
+		// 		System.out.println("\n\nRunning parted analysis for: "+projectName);
+		// 		partedAnalysis(projectName, projectPath, commitBeforeRefs, commit, commitStep, commitIds);
+		// 		System.out.println("Finished parted analysis for: "+projectName);
+		// 	}catch(Exception e) {
+		// 		finalErrors+="\n"+e.getMessage();	
+		// 	}
+		// }
 		
 		return finalErrors;
 	}
 	
+	public static void func1(String commitNumber, CommitBeforeRef commitBeforeRef, 
+			ArrayList<String> refactoredClasses, Hashtable<String, String> classes, 
+			String projectName) {
+		
+            String line = projectName + ","+commitBeforeRef.getCommitBeforeRefactoring()+","+commitNumber;
+
+			line += "," + commitBeforeRef.getRefactoringTypes().toString();
+            System.out.println(line);
+      
+	}
+	
+	//***TEST
+	public static void partedAnalysisTest(String projectName, String projectPath, List<CommitBeforeRef> commitArray, int currentCommit, int commitStep, List<CommitObj> commitIds){
+
+
+		String errorMesg = "";
+		
+		int lastCommit = currentCommit+commitStep;
+		if(lastCommit>commitArray.size()) {
+			lastCommit=commitArray.size();
+		}
+		try {
+			for(int comm = currentCommit; comm<(lastCommit); comm++){
+	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+	        	
+	            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
+	            
+	            String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(),projectName);
+	            commitBeforeRef.setCommitBeforeRefactoring(previousSha);
+	        }
+
+	        //gather data for Csv file
+	        ArrayList<String> csvLines = new ArrayList();
+			csvLines.add("projectName,SHA,CommitNumber,REF_TYPE");
+	        String cwdPath = System.getProperty("user.dir");
+
+	        for(int comm = currentCommit; comm<(lastCommit); comm++){
+	        	System.out.println("++++++++++++Wrinting commit "+comm+" / "+(commitArray.size()-1));
+	            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
+	            
+	            Hashtable<String, String> classes = new Hashtable<String, String>();
+				
+				ArrayList<String> refactoredClasses = new ArrayList<>();
+				Set<String> set = new HashSet<>(commitBeforeRef.getInvolvedFilesBeforeRefactoring());
+				refactoredClasses.addAll(set);
+
+				
+				String commitNumber = "";
+				for(int i=0; i<commitIds.size(); i++) {
+					if(!commitIds.get(i).getSha().equals(commitBeforeRef.getCommitBeforeRefactoring())){
+						continue;
+					}
+					commitNumber = "" + (i+1);
+					break;
+				}
+				
+				System.out.println("*** Adding lines to variable for CSV file");
+				func1(commitNumber, commitBeforeRef, refactoredClasses, classes, projectName);	
+				System.out.println("*** Added lines to variable for CSV file");
+
+	            classes.forEach((k, ln) -> {
+	                csvLines.add(ln);
+	            });
+	            
+	        }
+
+			System.out.println("*** Attempting to write csv file");
+	        String join = String.join("\n ", csvLines);
+	        
+	        //end of correct code
+	        String result = "";
+	        //temporary code for first analysis
+	        try {
+	            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_"+projectName+"_"+currentCommit+"-"+lastCommit+".csv"));
+	            writer.write(join);
+	            writer.close();
+				System.out.println("***_error_msg Writen csv file");
+	            writeTxtFile(projectName+"_done_error_msg", "done \n"+errorMesg);
+	            result= projectName+" true!";
+	        } catch (Exception e) {
+				
+				System.out.println("***_error_msg Not writen csv file");
+	            errorMesg += e+"\n";
+	            writeTxtFile(projectName+"_error_msg", "failed \n"+errorMesg);
+	            result= projectName+" false! \n"+e;
+	        }
+	        
+		}catch(Exception e) {
+			errorMesg += "\n"+e.getMessage();
+			System.out.println("*** _fatal_error_msg"+errorMesg);
+			writeTxtFile(projectName+"_fatal_error_msg", "done \n"+errorMesg);
+		}
+        
+        for(int comm = currentCommit; comm<lastCommit; comm++){
+        	System.out.println("**********deleting commit "+comm+" / "+(commitArray.size()-1));
+            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
+            commitBeforeRef.destroyMe();
+
+        }
+        
+        //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        
+    }
+
+
+
 	public static void writeCSVFile(String fileName, String txt) {
 		try {
 			FileWriter writer = new FileWriter(new File(System.getProperty("user.dir") + "/" + fileName + ".csv"));

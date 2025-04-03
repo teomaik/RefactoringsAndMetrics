@@ -21,8 +21,8 @@ public class Main {
 		// Get url and name
 		ArrayList<String> csvs = new ArrayList<>();
 		ArrayList<String> projects = new ArrayList<>();
-		projects.add("https://github.com/teomaik/DeRec-GEA.git");
-//		projects.add("https://github.com/apache/maven-archetype.git");
+//		projects.add("https://github.com/teomaik/DeRec-GEA.git");
+		projects.add("https://github.com/apache/maven-archetype.git");
 		
 		
 		System.out.println("Number of Command Line Argument = " + args.length);
@@ -332,14 +332,13 @@ public class Main {
 	        	
 	            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
 	            
-	            String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(),projectName);
-	            commitBeforeRef.setCommitBeforeRefactoring(previousSha);
+//	            String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(),projectName);
+//	            commitBeforeRef.setCommitBeforeRefactoring(previousSha);
 	        }
 
 	        //gather data for Csv file
 	        ArrayList<String> csvLines = new ArrayList();
 			csvLines.add("projectName,SHA,CommitNumber,REF_TYPE");
-	        String cwdPath = System.getProperty("user.dir");
 
 	        for(int comm = currentCommit; comm<(lastCommit); comm++){
 	        	System.out.println("++++++++++++Wrinting commit "+comm+" / "+(commitArray.size()-1));
@@ -375,21 +374,18 @@ public class Main {
 	        String join = String.join("\n ", csvLines);
 	        
 	        //end of correct code
-	        String result = "";
 	        //temporary code for first analysis
 	        try {
 	            FileWriter writer = new FileWriter(new File(System.getProperty("user.dir")+"/data_"+projectName+"_"+currentCommit+"-"+lastCommit+".csv"));
 	            writer.write(join);
 	            writer.close();
-				System.out.println("***_error_msg Writen csv file");
+				System.out.println("*** Writen csv file");
 	            writeTxtFile(projectName+"_done_error_msg", "done \n"+errorMesg);
-	            result= projectName+" true!";
 	        } catch (Exception e) {
 				
 				System.out.println("***_error_msg Not writen csv file");
 	            errorMesg += e+"\n";
 	            writeTxtFile(projectName+"_error_msg", "failed \n"+errorMesg);
-	            result= projectName+" false! \n"+e;
 	        }
 	        
 		}catch(Exception e) {

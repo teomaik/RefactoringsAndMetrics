@@ -303,14 +303,18 @@ public class Main {
 		return finalErrors;
 	}
 	
-	public static void func1(String commitNumber, CommitBeforeRef commitBeforeRef, 
-			ArrayList<String> refactoredClasses, Hashtable<String, String> classes, 
+	public static void func1(int comm, String commitNumber, 
+			CommitBeforeRef commitBeforeRef, 
+			ArrayList<String> refactoredClasses, 
+			Hashtable<String, String> classes, 
 			String projectName) {
 		
-            String line = projectName + ","+commitBeforeRef.getCommitBeforeRefactoring()+","+commitNumber;
+            String line = projectName + ","+commitBeforeRef.getRefactoringCommit()+","+comm;
 
 			line += "," + commitBeforeRef.getRefactoringTypes().toString();
             System.out.println(line);
+            
+            classes.put(String.valueOf(comm), line);
       
 	}
 	
@@ -325,16 +329,16 @@ public class Main {
 			lastCommit=commitArray.size();
 		}
 		try {
-			for(int comm = currentCommit; comm<(lastCommit); comm++){
-	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
-	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
-	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
-	        	
-	            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
-	            
-//	            String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(),projectName);
-//	            commitBeforeRef.setCommitBeforeRefactoring(previousSha);
-	        }
+//			for(int comm = currentCommit; comm<(lastCommit); comm++){
+//	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+//	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+//	        	System.out.println("**********Working on commit "+comm+" / "+(commitArray.size()-1));
+//	        	
+//	            CommitBeforeRef commitBeforeRef = commitArray.get(comm);
+//	            
+////	            String previousSha = Utils.findPreviousSha(commitBeforeRef.getRefactoringCommit(),projectName);
+////	            commitBeforeRef.setCommitBeforeRefactoring(previousSha);
+//	        }
 
 	        //gather data for Csv file
 	        ArrayList<String> csvLines = new ArrayList();
@@ -361,7 +365,7 @@ public class Main {
 				}
 				
 				System.out.println("*** Adding lines to variable for CSV file");
-				func1(commitNumber, commitBeforeRef, refactoredClasses, classes, projectName);	
+				func1(comm, commitNumber, commitBeforeRef, refactoredClasses, classes, projectName);	
 				System.out.println("*** Added lines to variable for CSV file");
 
 	            classes.forEach((k, ln) -> {
@@ -371,6 +375,7 @@ public class Main {
 	        }
 
 			System.out.println("*** Attempting to write csv file");
+			System.out.println(csvLines);
 	        String join = String.join("\n ", csvLines);
 	        
 	        //end of correct code
